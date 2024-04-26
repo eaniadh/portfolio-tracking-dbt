@@ -3,7 +3,7 @@
 # and underscores. A good package name should reflect your organization's
 # name or the intended use of these models
 name: 'portfolio_tracking'
-version: '0.1.0'
+version: '1.0.0'
 config-version: 2
 
 # This setting configures which "profile" dbt uses for this project.
@@ -35,10 +35,33 @@ clean-targets:         # directories to be removed by `dbt clean`
 # continue to be built as views. These settings can be overridden in the individual model files
 # using the `{{ config(...) }}` macro.
 
+
 models:
   portfolio_tracking:
-    +materialized: view
-    # Applies to all files under models/refined/
-    refined:
-      +materialized: table
-      +schema: REFINED
+      +materialized: view
+      staging:    # Data storage layer - Applies to all files under models/staging/
+        +materialized: view
+        +schema: STAGING
+      refined:    # Refined data layer
+        +materialized: view
+        +schema: REFINED
+      marts:      # Data delivery layer - Applies to all files under models/marts/
+        portfolio:     # one specific data mart
+          +materialized: table
+          +schema: MART_PORTFOLIO
+  snapshots:
+    portfolio_tracking:
+      +target_schema: SNAPSHOTS
+  
+  # Configuring Seeds
+  seeds:
+    database: PORTFOLIO_TRACKING
+    +schema: "{{target.schema}}_SEED_DATA"
+    portfolio_tracking:
+      ABC_BANK_SECURITY_INFO:
+        +column_types:
+          LOAD_TS: TIMESTAMP
+        +post-hook:
+          - "UPDATE {{ this }} SET LOAD_TS = '{{ run_started_at }}' WHERE LOAD_TS IS NULL"
+        
+        
