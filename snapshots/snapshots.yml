@@ -1,0 +1,10 @@
+version: 2
+snapshots:
+  - name: SNSH_ABC_BANK_POSITION
+    columns:
+      - name: POSITION_HKEY
+        tests:
+          - no_hash_collisions:
+              config: 
+                store_failures: true
+              hashed_fields: ACCOUNT_CODE, SECURITY_CODE
